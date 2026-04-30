@@ -51,7 +51,6 @@ public class TwitchWebsocketAPI extends TwitchWebAPI {
                 if (processedIds.size() > 100) {
                     processedIds.poll();
                 }
-                System.out.println(processedIds);
             }
 
             @Override

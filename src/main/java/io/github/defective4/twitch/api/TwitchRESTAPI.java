@@ -23,7 +23,7 @@ public class TwitchRESTAPI extends TwitchWebAPI {
         return gson.fromJson(resp, AuthToken.class);
     }
 
-    public ChannelFollower[] getChannelFollowers(int broadcasterId, int limit) throws IOException {
+    public ChannelFollower[] getChannelFollowers(String broadcasterId, String limit) throws IOException {
         JsonObject request = makeJSONRequest(
                 "/mock/channels/followers?broadcaster_id=%s&first=%s".formatted(broadcasterId, limit), "GET");
         return gson.fromJson(request.get("data"), ChannelFollower[].class);
