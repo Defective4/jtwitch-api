@@ -1,6 +1,8 @@
 package io.github.defective4.twitch.api;
 
 import java.net.URI;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
@@ -17,6 +19,8 @@ public class TwitchWebsocketAPI extends TwitchWebAPI {
         void sessionOpened(WebsocketSession message);
     }
 
+    private final Queue<String> processedIds = new LinkedList<>();
+
     public TwitchWebsocketAPI(String baseURI, String clientId, String userId, char[] token) {
         super(baseURI, clientId, userId, token);
     }
@@ -32,6 +36,7 @@ public class TwitchWebsocketAPI extends TwitchWebAPI {
             @Override
             public void onMessage(String message) {
                 WebsocketMessage msg = gson.fromJson(message, WebsocketMessage.class);
+                if (processedIds.contains(msg.metadata().messageId())) return;
                 switch (msg.metadata().messageType()) {
                     case "session_welcome" -> listener.sessionOpened(msg.payload().session());
                     case "notification" -> {
@@ -42,6 +47,11 @@ public class TwitchWebsocketAPI extends TwitchWebAPI {
                     }
                     default -> {}
                 }
+                processedIds.add(msg.metadata().messageId());
+                if (processedIds.size() > 100) {
+                    processedIds.poll();
+                }
+                System.out.println(processedIds);
             }
 
             @Override
