@@ -6,10 +6,12 @@ import com.google.gson.JsonObject;
 
 import io.github.defective4.twitch.api.model.AuthToken;
 import io.github.defective4.twitch.api.model.ChannelFollower;
+import io.github.defective4.twitch.api.model.EventSubRequest;
+import io.github.defective4.twitch.api.model.TransportObject;
 
 public class TwitchRESTAPI extends TwitchWebAPI {
 
-    public TwitchRESTAPI(String baseURI, String clientId, int userId, char[] token) {
+    public TwitchRESTAPI(String baseURI, String clientId, String userId, char[] token) {
         super(baseURI, clientId, userId, token);
     }
 
@@ -25,5 +27,11 @@ public class TwitchRESTAPI extends TwitchWebAPI {
         JsonObject request = makeJSONRequest(
                 "/mock/channels/followers?broadcaster_id=%s&first=%s".formatted(broadcasterId, limit), "GET");
         return gson.fromJson(request.get("data"), ChannelFollower[].class);
+    }
+
+    public void subscribeToEvent(String type, Object condition, String wsSession) throws IOException {
+        EventSubRequest request = new EventSubRequest(type, "2", condition,
+                new TransportObject("websocket", wsSession));
+        makeJSONRequest("/eventsub/subscriptions", "POST", request);
     }
 }

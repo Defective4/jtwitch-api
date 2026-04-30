@@ -2,7 +2,9 @@ package io.github.defective4.twitch.api;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URI;
 
@@ -17,9 +19,9 @@ public class TwitchWebAPI {
     protected final String clientId;
     protected final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     protected final char[] token;
-    protected final int userId;
+    protected final String userId;
 
-    public TwitchWebAPI(String baseURI, String clientId, int userId, char[] token) {
+    public TwitchWebAPI(String baseURI, String clientId, String userId, char[] token) {
         this.baseURI = baseURI;
         this.clientId = clientId;
         this.userId = userId;
@@ -27,6 +29,10 @@ public class TwitchWebAPI {
     }
 
     protected JsonObject makeJSONRequest(String path, String method) throws IOException {
+        return makeJSONRequest(path, method, null);
+    }
+
+    protected JsonObject makeJSONRequest(String path, String method, Object object) throws IOException {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) URI.create(baseURI + path).toURL().openConnection();
@@ -34,6 +40,9 @@ public class TwitchWebAPI {
             connection.setRequestMethod(method);
             connection.setRequestProperty("Authorization", "Bearer %s".formatted(new String(token)));
             connection.setRequestProperty("Client-Id", clientId);
+            if (object != null) try (Writer writer = new OutputStreamWriter(connection.getOutputStream())) {
+                gson.toJson(object, writer);
+            }
             try (Reader reader = new InputStreamReader(connection.getInputStream())) {
                 return JsonParser.parseReader(reader).getAsJsonObject();
             }
